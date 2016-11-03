@@ -33,13 +33,10 @@ class Image(models.Model):
     """
 
     user = models.ForeignKey(User, on_delete=models.CASCADE,)
-    is_landscape = models.BooleanField(default=True)
-
-    def __init__(self):
-        url = models.ImageField(upload_to="./images/%s" % (Image.user.uid,))
+    filepath = models.ImageField(upload_to='images/')
 
     def __str__(self):
-        return "User: %s, Upload Path: %s, URL: %s, Is Landscape: %s" % (self.user, self.upload_path, self.url, self.is_landscape,)
+        return "User: %s, Upload Path: %s, Is Landscape: %s" % (self.user, self.path, self.is_landscape,)
 
 class Filter(models.Model):
     """
