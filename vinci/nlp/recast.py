@@ -34,7 +34,7 @@ class Recast(object):
         pprint(response.intent())
 
         if response.intent() is not None:
-            return response.intent().slug, Recast.INTENT_TYPE[response.intent().slug]
+            return response.intent().slug, Recast.INTENT_TYPE[response.intent().slug], response.intent().confidence
         else:
             return None, None
 

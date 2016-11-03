@@ -8,6 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 
 from .nlp import recast as nlp
+from . import models
 # Create your views here.
 
 VALIDATION_TOKEN = "vinci"
@@ -58,12 +59,22 @@ class VinciView(generic.View):
                     fbid = message['sender']['id']
                     text = message['message']['text']
 
+
+                    """
+                    TEXT PROCESSING CODE
+                    Parses text and returns intent. Handles everything based on that
+                    """
                     nlp_handler = nlp.Recast()
 
-                    intent, intent_type = nlp_handler.understand_intent(text)
+                    intent, intent_type, confidence = nlp_handler.understand_intent(text)
                     pprint("Intent is: %s" % (intent,))
                     pprint("Intent Types: %s" % (intent_type,))
 
+
+                    """
+                    DISPATCH CODE
+                    Dispatches the calls to the various functions required to respond to a user
+                    """
                     if intent_type == 'text':
 
                         response = nlp_handler.parse_response_from_intent(intent)
@@ -73,5 +84,21 @@ class VinciView(generic.View):
                     elif intent_type == 'image':
 
                         pprint("I'm supposed to send an image here I guess")
+
+
+                    """
+                    DATABASE CODE
+                    This code will add a user if he does not exist, and save his message
+                    """
+                    user = models.User.objects.filter(uid=fbid)
+                    user = user[0]
+
+                    if not user:
+                        user = models.User(uid=fbid)
+                        user.save()
+                    else:
+                        pprint("We have a user for this id")
+
+                    user.message_set.create(content=text, intent=intent, confidence=confidence)
 
         return HttpResponse()
