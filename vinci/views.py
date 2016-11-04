@@ -27,11 +27,28 @@ class FacebookHandler(object):
 
     def send_filters(self, fbid):
 
-        fil = models.Filter.objects.get(pk=1)
+        filters = models.Filter.objects.all()
 
         send_message_url = 'https://graph.facebook.com/v2.6/me/messages?access_token=%s' % ACCESS_TOKEN
-        url = "%s/%s" % (SITE_URL, fil.url.url)
-        pprint("URL: %s" % url)
+
+        for fil in filters:
+
+            url = "%s/%s" % (SITE_URL, fil.url.url)
+            pprint("URL: %s" % url)
+            elements += {
+                    "title":fil.name,
+                    "image_url":url,
+                    "buttons":[
+                        {
+                            "type":"postback",
+                            "title":"Pick me!",
+                            "payload":fil.name
+                            }
+                        ]
+                    }
+
+        pprint(elements)
+
         response_to_send = {
                 "recipient" :   {"id":str(fbid)},
                 "message":{
@@ -39,19 +56,7 @@ class FacebookHandler(object):
                         "type":"template",
                         "payload":{
                             "template_type":"generic",
-                            "elements":[
-                                {
-                                    "title":fil.name,
-                                    "image_url":url,
-                                    "buttons":[
-                                        {
-                                            "type":"postback",
-                                            "title":"Pick me!",
-                                            "payload":fil.name
-                                            }
-                                        ]
-                                    }
-                                ]
+                            "elements":elements
                             }
                         }
                     }
