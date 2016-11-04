@@ -1,4 +1,4 @@
-import json, requests, subprocess
+import json, requests, subprocess, urllib
 from pprint import pprint
 
 from django.http import HttpResponse
@@ -9,7 +9,7 @@ from django.utils.decorators import method_decorator
 
 from .nlp import recast as nlp
 from . import models
-
+from .rendering import deep as dl
 # Create your views here.
 
 SITE_URL='http://0cef449d.ngrok.io/'
@@ -61,7 +61,28 @@ class FacebookHandler(object):
         pprint(response_to_send)
 
         status = requests.post(send_message_url, headers={"Content-Type": "application/json"}, data=response_msg)
-        pprint(status.content)
+
+    def send_image(self, fbid, url):
+
+        response_to_send = {
+                "recipient":{
+                    "id":fbid
+                    },
+                "message":{
+                    "attachment":{
+                        "type":"image",
+                        "payload":{
+                            "url": url
+                            }
+                        }
+                    }
+                }
+
+        response_msg = json.dumps(response_to_send)
+        pprint(response_msg)
+
+        status = requests.post(send_message_url, headers={"Content-Type": "application/json"}, data=response_msg)
+
 
 
 class IndexView(generic.View):
@@ -105,13 +126,19 @@ class VinciView(generic.View):
 
             for message in entry['messaging']:
 
-                if 'message' in message:
+                pprint(message)
+
+                if 'postback' in message:
+
+                    self.postback_handler(message)
+
+                elif 'text' in message['message']:
 
                     self.message_handler(message)
 
-                elif 'postback' in message:
+                elif 'attachments' in message['message']:
 
-                    self.postback_handler(message)
+                    self.image_handler(message)
 
 
         return HttpResponse()
@@ -123,13 +150,16 @@ class VinciView(generic.View):
         """
 
         fbid = message['sender']['id']
-        text = message['message']['text']
-
 
         """
         TEXT PROCESSING CODE
         Parses text and returns intent. Handles everything based on that
         """
+        try:
+            text = message['message']['text']
+        except KeyError:
+            text = "hello"
+
         nlp_handler = nlp.Recast()
 
         intent, intent_type, confidence = nlp_handler.understand_intent(text)
@@ -148,25 +178,24 @@ class VinciView(generic.View):
 
             dispatch.send_message(fbid, response)
 
+            """
+            DATABASE CODE
+            This code will add a user if he does not exist, and save his message
+            """
+            user = models.User.objects.filter(uid=fbid)
+            user = user[0]
+
+            if not user:
+                user = models.User(uid=fbid)
+                user.save()
+            else:
+                pprint("We have a user for this id")
+
+            user.message_set.create(content=text, intent=intent, confidence=confidence)
+
         elif intent_type == 'image':
 
             dispatch.send_filters(fbid)
-
-
-        """
-        DATABASE CODE
-        This code will add a user if he does not exist, and save his message
-        """
-        user = models.User.objects.filter(uid=fbid)
-        user = user[0]
-
-        if not user:
-            user = models.User(uid=fbid)
-            user.save()
-        else:
-            pprint("We have a user for this id")
-
-        user.message_set.create(content=text, intent=intent, confidence=confidence)
 
 
     def postback_handler(self, message):
@@ -180,7 +209,6 @@ class VinciView(generic.View):
         text = "Okay! You've selected the filter \"%s\"" % payload
 
         dispatch = FacebookHandler()
-
         dispatch.send_message(fbid, text)
 
         user = models.User.objects.filter(uid=fbid)
@@ -196,8 +224,56 @@ class VinciView(generic.View):
 
         else:
 
-            text = "Due to the lack of skill on part of my creator, we are going to have to proceed with using your latest submission. Please wait while your image renders."
+            dispatch.send_message(fbid, "We are now drawing your image by hand, scanning it, and sending it to you.")
 
-            dispatch.send_message(fbid, text)
+            out_file = "%d.jpg" % user.uid
+            img_out = models.Image(user=user, filepath=out_file)
+            img_in  = models.Image(user=user, filepath="in_%s" % out_file)
+            url = "%s/%s" % (SITE_URL, img_out.filepath.url)
+
+            pprint(url)
+            pprint(img_in.filepath.path)
+            pprint(img_out.filepath.path)
+
+            dl.render(img_in.filepath.path, img_out.filepath.path)
+
+            dispatch.send_message(fbid, url)
 
 
+
+    def image_handler(self, message):
+        """
+        This method is responsible for dealing with images that the user bestows upon us
+        """
+
+        fbid = message['sender']['id']
+
+        image_url = message['message']['attachments'][0]['payload']['url']
+        pprint(image_url)
+
+        user = models.User.objects.filter(uid=fbid)
+        user = user[0]
+
+        if not user:
+            user = models.User(uid=fbid)
+            user.save()
+        else:
+            pprint("We have a user for this id")
+
+        out_file="%d.jpg" % user.uid
+        in_file = "in_%s" % out_file
+
+        pprint(in_file)
+
+        if user.image_set.all():
+            user.image_set.all().delete()
+
+        img = models.Image(user=user, filepath=in_file)
+        img.save()
+
+        img = urllib.urlretrieve(image_url, img.filepath.path)
+
+        dispatch = FacebookHandler()
+
+        dispatch.send_message(fbid, "Okay we have updated your image. Please select a filter again!")
+        dispatch.send_filters(fbid)

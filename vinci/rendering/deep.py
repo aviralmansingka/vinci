@@ -6,11 +6,12 @@ import os
 
 IMAGE_W = 800 
 IMAGE_H = 600 
-CONTENT_IMG =  './images/Taipei101.jpg'
-STYLE_IMG = './images/StarryNight.jpg'
-OUTOUT_DIR = './results'
+DIR_NAME=os.path.dirname(__file__)
+CONTENT_IMG = "%s%s" % (DIR_NAME, '/images/Taipei101.jpg')
+STYLE_IMG = "%s%s" % (DIR_NAME, '/images/StarryNight.jpg')
+OUTOUT_DIR = "%s%s" % (DIR_NAME, '/results')
 OUTPUT_IMG = 'results.png'
-VGG_MODEL = 'imagenet-vgg-verydeep-19.mat'
+VGG_MODEL = DIR_NAME + '/imagenet-vgg-verydeep-19.mat'
 INI_NOISE_RATIO = 0.7
 STYLE_STRENGTH = 500
 ITERATION = 5000
@@ -103,7 +104,7 @@ def write_image(path, image):
   scipy.misc.imsave(path, image)
 
 
-def render(content, output_dir):
+def render(content=CONTENT_IMG, output_dir=OUTPUT_IMG):
   CONTENT_IMG =  content
   OUTPUT_DIR = output_dir
   net = build_vgg19(VGG_MODEL)
