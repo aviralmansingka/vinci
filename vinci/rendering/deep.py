@@ -9,7 +9,6 @@ IMAGE_H = 600
 DIR_NAME=os.path.dirname(__file__)
 CONTENT_IMG = "%s%s" % (DIR_NAME, '/images/Taipei101.jpg')
 STYLE_IMG = "%s%s" % (DIR_NAME, '/images/StarryNight.jpg')
-OUTOUT_DIR = "%s%s" % (DIR_NAME, '/results')
 OUTPUT_IMG = 'results.png'
 VGG_MODEL = DIR_NAME + '/imagenet-vgg-verydeep-19.mat'
 INI_NOISE_RATIO = 0.7
@@ -107,9 +106,15 @@ def write_image(path, image):
 def render(content=CONTENT_IMG, output_dir=OUTPUT_IMG):
   CONTENT_IMG =  content
   OUTPUT_DIR = output_dir
+
+  print CONTENT_IMG
+  print OUTPUT_DIR
+
   net = build_vgg19(VGG_MODEL)
+
   sess = tf.Session()
   sess.run(tf.initialize_all_variables())
+
   noise_img = np.random.uniform(-20, 20, (1, IMAGE_H, IMAGE_W, 3)).astype('float32')
   content_img = read_image(CONTENT_IMG)
   style_img = read_image(STYLE_IMG)
@@ -129,17 +134,17 @@ def render(content=CONTENT_IMG, output_dir=OUTPUT_IMG):
   sess.run(tf.initialize_all_variables())
   sess.run(net['input'].assign( INI_NOISE_RATIO* noise_img + (1.-INI_NOISE_RATIO) * content_img))
 
-  if not os.path.exists(OUTOUT_DIR):
-      os.mkdir(OUTOUT_DIR)
+  if not os.path.exists(OUPOUT_DIR):
+      os.mkdir(OUTPUT_DIR)
 
   for i in range(ITERATION):
     sess.run(train)
     if i%100 ==0:
       result_img = sess.run(net['input'])
       print sess.run(cost_total)
-      write_image(os.path.join(OUTOUT_DIR,'%s.png'%(str(i).zfill(4))),result_img)
+      write_image(OUTPUT_DIR,result_img)
 
-  write_image(os.path.join(OUTOUT_DIR,OUTPUT_IMG),result_img)
+  write_image(OUTPUT_DIR,result_img)
   return OUTPUT_DIR
 
 

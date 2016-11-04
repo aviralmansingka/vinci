@@ -31,11 +31,13 @@ class FacebookHandler(object):
 
         send_message_url = 'https://graph.facebook.com/v2.6/me/messages?access_token=%s' % ACCESS_TOKEN
 
+        elements = []
+
         for fil in filters:
 
             url = "%s/%s" % (SITE_URL, fil.url.url)
             pprint("URL: %s" % url)
-            elements += {
+            mydict = {
                     "title":fil.name,
                     "image_url":url,
                     "buttons":[
@@ -46,6 +48,7 @@ class FacebookHandler(object):
                             }
                         ]
                     }
+            elements.append(mydict)
 
         pprint(elements)
 
@@ -273,10 +276,9 @@ class VinciView(generic.View):
         if user.image_set.all():
             user.image_set.all().delete()
 
-        img = models.Image(user=user, filepath=in_file)
-        img.save()
+        img_db = models.Image(user=user, filepath=in_file)
 
-        img = urllib.urlretrieve(image_url, img.filepath.path)
+        img = urllib.urlretrieve(image_url, img_db.filepath.path)
 
         dispatch = FacebookHandler()
 
