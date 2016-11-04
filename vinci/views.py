@@ -1,4 +1,4 @@
-import json, requests
+import json, requests, subprocess
 from pprint import pprint
 
 from django.http import HttpResponse
@@ -9,14 +9,60 @@ from django.utils.decorators import method_decorator
 
 from .nlp import recast as nlp
 from . import models
+
 # Create your views here.
 
+SITE_URL='http://0cef449d.ngrok.io/'
 VALIDATION_TOKEN = "vinci"
+ACCESS_TOKEN='EAADGJe1gDtQBAMld6JsYUVC9s1UPvFpePXPQDzDoQGhPZCmJhmeRioZCGZAIF6i3Is1or5AhcGzASx88SUD7Q0AP0GmTrWGzi1mL2UAhpSDYyOiGNfGrZAAo0ZAFtQzxdZA8cbqlfh10InP3TrA528AJKF33dZAbZCOWKVQTdSvPSQZDZD'
 
-def post_facebook_message(fbid, received_message):
-    post_message_url = 'https://graph.facebook.com/v2.6/me/messages?access_token=EAADGJe1gDtQBAMld6JsYUVC9s1UPvFpePXPQDzDoQGhPZCmJhmeRioZCGZAIF6i3Is1or5AhcGzASx88SUD7Q0AP0GmTrWGzi1mL2UAhpSDYyOiGNfGrZAAo0ZAFtQzxdZA8cbqlfh10InP3TrA528AJKF33dZAbZCOWKVQTdSvPSQZDZD'
-    response_msg = json.dumps({"recipient": {"id":fbid}, "message":{"text":received_message}})
-    status = requests.post(post_message_url, headers={"Content-Type": "application/json"}, data=response_msg)
+class FacebookHandler(object):
+
+    def send_message(self, fbid, received_message):
+
+        send_message_url = 'https://graph.facebook.com/v2.6/me/messages?access_token=%s' % ACCESS_TOKEN
+        response_msg = json.dumps({"recipient": {"id":fbid}, "message":{"text":received_message}})
+
+        status = requests.post(send_message_url, headers={"Content-Type": "application/json"}, data=response_msg)
+
+    def send_filters(self, fbid):
+
+        fil = models.Filter.objects.get(pk=1)
+
+        send_message_url = 'https://graph.facebook.com/v2.6/me/messages?access_token=%s' % ACCESS_TOKEN
+        url = "%s/%s" % (SITE_URL, fil.url.url)
+        pprint("URL: %s" % url)
+        response_to_send = {
+            "recipient" :   {"id":str(fbid)},
+            "message":{
+                "attachment":{
+                    "type":"template",
+                    "payload":{
+                        "template_type":"generic",
+                        "elements":[
+                            {
+                                "title":fil.name,
+                                "image_url":url,
+                                "buttons":[
+                                    {
+                                        "type":"postback",
+                                        "title":"Pick me!",
+                                        "payload":"%s, %s" % (fbid, fil.name)
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+
+        response_msg = json.dumps(response_to_send)
+        pprint(response_to_send)
+
+        status = requests.post(send_message_url, headers={"Content-Type": "application/json"}, data=response_msg)
+        pprint(status.content)
+
 
 class IndexView(generic.View):
     def get(self, request, *args, **kwargs):
@@ -49,12 +95,12 @@ class VinciView(generic.View):
 
         incoming_message = json.loads(self.request.body.decode('utf-8'))
 
+        pprint(incoming_message)
         for entry in incoming_message['entry']:
 
             for message in entry['messaging']:
 
                 if 'message' in message:
-                    pprint(message)
 
                     fbid = message['sender']['id']
                     text = message['message']['text']
@@ -75,15 +121,16 @@ class VinciView(generic.View):
                     DISPATCH CODE
                     Dispatches the calls to the various functions required to respond to a user
                     """
+                    dispatch = FacebookHandler()
                     if intent_type == 'text':
 
                         response = nlp_handler.parse_response_from_intent(intent)
 
-                        post_facebook_message(fbid, response)
+                        dispatch.send_message(fbid, response)
 
                     elif intent_type == 'image':
 
-                        pprint("I'm supposed to send an image here I guess")
+                        dispatch.send_filters(fbid)
 
 
                     """

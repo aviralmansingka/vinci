@@ -36,7 +36,7 @@ class Image(models.Model):
     filepath = models.ImageField(upload_to='images/')
 
     def __str__(self):
-        return "User: %s, Upload Path: %s, Is Landscape: %s" % (self.user, self.path, self.is_landscape,)
+        return "User: %s, Upload Path: %s" % (self.user, self.filepath,)
 
 class Filter(models.Model):
     """
@@ -47,5 +47,5 @@ class Filter(models.Model):
     url = models.ImageField(upload_to='./filters')
 
     def __str__(self):
-        return "Name: %s, URL: %s" % (name, url,)
+        return "Name: %s, URL: %s" % (self.name, self.url,)
 
