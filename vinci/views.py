@@ -7,6 +7,8 @@ from django.views import generic
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 
+from PIL import Image as Img
+
 from .nlp import recast as nlp
 from . import models
 from .rendering import deep as dl
@@ -222,7 +224,7 @@ class VinciView(generic.View):
         user = models.User.objects.filter(uid=fbid)
         user = user[0]
 
-        image = user.image_set.all()
+        image = user.image_set.all()[0]
 
         fil = models.Filter.objects.filter(name=payload)
         fil = fil[0]
@@ -282,7 +284,12 @@ class VinciView(generic.View):
 
         img_db = models.Image(user=user, filepath=in_file)
 
-        img = urllib.urlretrieve(image_url, img_db.filepath.path)
+        urllib.urlretrieve(image_url, img_db.filepath.path)
+
+        img = Img.open(img_db.filepath.path)
+
+        img_db.width, img_db.height = img.size
+        img_db.save()
 
         dispatch = FacebookHandler()
 
