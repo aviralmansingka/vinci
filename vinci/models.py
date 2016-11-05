@@ -34,6 +34,8 @@ class Image(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE,)
     filepath = models.ImageField(upload_to='images/')
+    width = models.IntegerField()
+    height = models.IntegerField()
 
     def __str__(self):
         return "User: %s, Upload Path: %s" % (self.user, self.filepath,)
@@ -45,6 +47,8 @@ class Filter(models.Model):
 
     name = models.CharField(max_length=30)
     url = models.ImageField(upload_to='./filters')
+    width = models.IntegerField()
+    height = models.IntegerField()
 
     def __str__(self):
         return "Name: %s, URL: %s" % (self.name, self.url,)

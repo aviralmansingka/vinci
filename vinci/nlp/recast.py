@@ -11,12 +11,12 @@ class Recast(object):
     """
 
     POSSIBLE_RESPONSE = {
-        'greeting': 'Hi! I\'m Vinci. Really nice to meet you',
+        'greetings': 'Hi! I\'m Vinci. Really nice to meet you',
         'goodbyes': 'See you later! Stay tuned for updates',
     }
 
     INTENT_TYPE = {
-        'greeting': 'text',
+        'greetings': 'text',
         'goodbyes': 'text',
         'showfilters': 'image',
     }

@@ -103,12 +103,14 @@ def write_image(path, image):
   scipy.misc.imsave(path, image)
 
 
-def render(content=CONTENT_IMG, output_dir=OUTPUT_IMG):
+def render(content=CONTENT_IMG, output_dir=OUTPUT_IMG, image_size=(800,600), filter_size=(800,600)):
   CONTENT_IMG =  content
   OUTPUT_DIR = output_dir
 
   print CONTENT_IMG
   print OUTPUT_DIR
+  print image_size
+  print filter_size
 
   net = build_vgg19(VGG_MODEL)
 

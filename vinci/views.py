@@ -224,6 +224,9 @@ class VinciView(generic.View):
 
         image = user.image_set.all()
 
+        fil = models.Filter.objects.filter(name=payload)
+        fil = fil[0]
+
         if not image:
 
             text = "You don't appear to have sent us an image yet. Do you want to send us one?"
@@ -240,10 +243,11 @@ class VinciView(generic.View):
             url = "%s/%s" % (SITE_URL, img_out.filepath.url)
 
             pprint(url)
-            pprint(img_in.filepath.path)
-            pprint(img_out.filepath.path)
 
-            dl.render(img_in.filepath.path, img_out.filepath.path)
+            image_size = (image.width, image.height)
+            filter_size = (fil.width, fil.height)
+
+            dl.render(img_in.filepath.path, img_out.filepath.path, image_size, filter_size)
 
             dispatch.send_message(fbid, url)
 
