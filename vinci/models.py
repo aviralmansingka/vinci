@@ -46,9 +46,8 @@ class Filter(models.Model):
     """
 
     name = models.CharField(max_length=30)
-    url = models.ImageField(upload_to='./filters')
-    width = models.IntegerField()
-    height = models.IntegerField()
+    url = models.ImageField(upload_to='images/')
+    path = models.FileField(upload_to='filters/')
 
     def __str__(self):
         return "Name: %s, URL: %s" % (self.name, self.url,)

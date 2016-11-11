@@ -1,5 +1,6 @@
 import recastai
 from pprint import pprint
+from . import replies as message_handler
 
 
 
@@ -45,8 +46,10 @@ class Recast(object):
         Takes as input the users' intent and return a response
         """
 
+        replies = message_handler.Replies()
+
         try:
-            return Recast.POSSIBLE_RESPONSE[intent]
+            return replies.handle_intent(intent)
         except KeyError:
             return "Sorry. Unfortunately I couldn't understand you!"
 

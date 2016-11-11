@@ -11,7 +11,7 @@ from PIL import Image as Img
 
 from .nlp import recast as nlp
 from . import models
-from .rendering import deep as dl
+from .rendering import evaluate as dl
 # Create your views here.
 
 SITE_URL='http://0cef449d.ngrok.io/'
@@ -74,6 +74,7 @@ class FacebookHandler(object):
 
     def send_image(self, fbid, url):
 
+        send_message_url = 'https://graph.facebook.com/v2.6/me/messages?access_token=%s' % ACCESS_TOKEN
         response_to_send = {
                 "recipient":{
                     "id":fbid
@@ -193,15 +194,16 @@ class VinciView(generic.View):
             This code will add a user if he does not exist, and save his message
             """
             user = models.User.objects.filter(uid=fbid)
-            user = user[0]
 
-            if not user:
+            if user.count() <= 0:
                 user = models.User(uid=fbid)
                 user.save()
             else:
+                user = user[0]
                 pprint("We have a user for this id")
 
-            user.message_set.create(content=text, intent=intent, confidence=confidence)
+            m = models.Message(user=user, content=text, confidence=confidence, intent=intent)
+            m.save()
 
         elif intent_type == 'image':
 
@@ -244,16 +246,17 @@ class VinciView(generic.View):
             out_file = "%d.jpg" % user.uid
             img_out = models.Image(user=user, filepath=out_file)
             img_in  = models.Image(user=user, filepath="in_%s" % out_file)
-            url = "%s/%s" % (SITE_URL, img_out.filepath.url)
+            url = "%s%s" % (SITE_URL, img_out.filepath.url)
 
             pprint(url)
 
             image_size = (image.width, image.height)
-            filter_size = (fil.width, fil.height)
 
-            dl.render(img_in.filepath.path, img_out.filepath.path, image_size, filter_size)
+            dl.render(img_in.filepath.path, img_out.filepath.path, fil.path.path)
 
-            dispatch.send_message(fbid, url)
+            pprint(url)
+
+            dispatch.send_image(fbid, url)
 
 
 
