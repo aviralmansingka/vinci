@@ -13,11 +13,6 @@ class Recast(object):
     An object responsible for all recast related functionality
     """
 
-    POSSIBLE_RESPONSE = {
-        'greetings': 'Hi! I\'m Vinci. Really nice to meet you',
-        'goodbyes': 'See you later! Stay tuned for updates',
-    }
-
     INTENT_TYPE = {
         'greetings': 'text',
         'goodbyes': 'text',
