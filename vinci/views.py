@@ -224,7 +224,7 @@ class VinciView(generic.View):
         user = models.User.objects.filter(uid=fbid)
         user = user[0]
 
-        image = user.image_set.all()[0]
+        image = user.image_set.all()
 
         fil = models.Filter.objects.filter(name=payload)
         fil = fil[0]
@@ -236,6 +236,8 @@ class VinciView(generic.View):
             dispatch.send_message(fbid, text)
 
         else:
+
+            image = image[0]
 
             dispatch.send_message(fbid, "We are now drawing your image by hand, scanning it, and sending it to you.")
 

@@ -90,9 +90,11 @@ def build_style_loss(a, x):
 
 
 
-def read_image(path):
+def read_image(path, size):
+  print "read_image"
+  print size
   image = scipy.misc.imread(path)
-  image = image[np.newaxis,:IMAGE_H,:IMAGE_W,:] 
+  image = image[np.newaxis,:size[1],:size[0],:] 
   image = image - MEAN_VALUES
   return image
 
@@ -118,8 +120,8 @@ def render(content=CONTENT_IMG, output_dir=OUTPUT_IMG, image_size=(800,600), fil
   sess.run(tf.initialize_all_variables())
 
   noise_img = np.random.uniform(-20, 20, (1, IMAGE_H, IMAGE_W, 3)).astype('float32')
-  content_img = read_image(CONTENT_IMG)
-  style_img = read_image(STYLE_IMG)
+  content_img = read_image(CONTENT_IMG, filter_size)
+  style_img = read_image(STYLE_IMG, filter_size)
 
   sess.run([net['input'].assign(content_img)])
   cost_content = sum(map(lambda l,: l[1]*build_content_loss(sess.run(net[l[0]]) ,  net[l[0]])

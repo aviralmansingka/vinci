@@ -1,6 +1,8 @@
 import recastai
 from pprint import pprint
 
+
+
 RECAST_ACCESS_TOKEN = '95bed182f2b541ccefc1084bd76826bb'
 LANG = 'en'
 
@@ -42,6 +44,7 @@ class Recast(object):
         """
         Takes as input the users' intent and return a response
         """
+
         try:
             return Recast.POSSIBLE_RESPONSE[intent]
         except KeyError:
