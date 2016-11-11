@@ -17,7 +17,7 @@ class Recast(object):
         'greetings': 'text',
         'goodbyes': 'text',
         'showfilters': 'image',
-        'help_intent':'text',
+        'help-intent':'text',
     }
 
     def __init__(self):
@@ -30,7 +30,7 @@ class Recast(object):
 
         response = self.client.text_request(text)
 
-        pprint(response.intent())
+        print intent
 
         if response.intent() is not None:
             return response.intent().slug, Recast.INTENT_TYPE[response.intent().slug], response.intent().confidence

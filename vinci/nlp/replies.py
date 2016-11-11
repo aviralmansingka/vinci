@@ -58,11 +58,13 @@ class Replies():
   def handle_intent(self, intent):
     rand_index = self.generateIndex()
 
+    pprint(intent)
+
     if intent == 'greetings':
       return self.generateGreeting(self.greetings, rand_index)
     elif intent == 'goodbyes':
       return self.generateGoodbye(self.goodbyes, rand_index)
-    elif intent == 'help_intent':
+    elif intent == 'help-intent':
       return self.help_message
     else:
       return "Didn't quite get that. Try greetings or goodbyes"
