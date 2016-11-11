@@ -17,6 +17,7 @@ class Recast(object):
         'greetings': 'text',
         'goodbyes': 'text',
         'showfilters': 'image',
+        'help_intent':'text',
     }
 
     def __init__(self):
