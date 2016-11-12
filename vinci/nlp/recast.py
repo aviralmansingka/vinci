@@ -30,7 +30,6 @@ class Recast(object):
 
         response = self.client.text_request(text)
 
-        print intent
 
         if response.intent() is not None:
             return response.intent().slug, Recast.INTENT_TYPE[response.intent().slug], response.intent().confidence
@@ -44,8 +43,11 @@ class Recast(object):
 
         replies = message_handler.Replies()
 
-        try:
-            return replies.handle_intent(intent)
-        except KeyError:
+        reply = replies.handle_intent(intent)
+
+        print reply
+        if reply:
+            return reply
+        else:
             return "Sorry. Unfortunately I couldn't understand you!"
 

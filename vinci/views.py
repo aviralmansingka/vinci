@@ -186,9 +186,15 @@ class VinciView(generic.View):
         dispatch = FacebookHandler()
         if intent_type == 'text':
 
-            response = nlp_handler.parse_response_from_intent(intent)
+            if intent is not None:
 
-            dispatch.send_message(fbid, response)
+                response = nlp_handler.parse_response_from_intent(intent)
+                print response
+
+                dispatch.send_message(fbid, response)
+            else:
+                print "I counldn't understand you"
+                dispatch.send_message(fbid, "Sorry, I am unable to understand you")
 
             """
             DATABASE CODE
@@ -272,12 +278,12 @@ class VinciView(generic.View):
         pprint(image_url)
 
         user = models.User.objects.filter(uid=fbid)
-        user = user[0]
 
         if not user:
             user = models.User(uid=fbid)
             user.save()
         else:
+            user = user[0]
             pprint("We have a user for this id")
 
         out_file="%d.jpg" % user.uid
