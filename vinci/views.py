@@ -39,7 +39,7 @@ class FacebookHandler(object):
         for fil in filters:
 
             url = "%s/%s" % (SITE_URL, fil.url.url)
-            pprint("URL: %s" % url)
+
             mydict = {
                     "title":fil.name,
                     "image_url":url,
@@ -53,7 +53,6 @@ class FacebookHandler(object):
                     }
             elements.append(mydict)
 
-        pprint(elements)
 
         response_to_send = {
                 "recipient" :   {"id":str(fbid)},
@@ -69,7 +68,6 @@ class FacebookHandler(object):
                 }
 
         response_msg = json.dumps(response_to_send)
-        pprint(response_to_send)
 
         status = requests.post(send_message_url, headers={"Content-Type": "application/json"}, data=response_msg)
 
@@ -91,7 +89,6 @@ class FacebookHandler(object):
                 }
 
         response_msg = json.dumps(response_to_send)
-        pprint(response_msg)
 
         status = requests.post(send_message_url, headers={"Content-Type": "application/json"}, data=response_msg)
 
@@ -138,8 +135,6 @@ class VinciView(generic.View):
 
             for message in entry['messaging']:
 
-                pprint(message)
-
                 if 'postback' in message:
 
                     self.postback_handler(message)
@@ -163,15 +158,16 @@ class VinciView(generic.View):
 
         fbid = message['sender']['id']
 
-        """
-        TEXT PROCESSING CODE
-        Parses text and returns intent. Handles everything based on that
-        """
         try:
             text = message['message']['text']
         except KeyError:
             text = "hello"
 
+
+        """
+        TEXT PROCESSING CODE
+        Parses text and returns intent. Handles everything based on that
+        """
         nlp_handler = nlp.Recast()
 
         intent, intent_type, confidence = nlp_handler.understand_intent(text)
@@ -180,37 +176,50 @@ class VinciView(generic.View):
 
 
         """
+        DATABASE CODE
+        This code will add a user if he does not exist, and save his message
+        """
+        user = models.User.objects.filter(uid=fbid)
+
+        if user.count() <= 0:
+
+            user_details_url = "https://graph.facebook.com/v2.6/%s"%fbid
+            user_details_params = {'fields':'first_name,last_name,profile_pic', 'access_token':ACCESS_TOKEN}
+            user_details = requests.get(user_details_url, user_details_params).json()
+
+            name = "%s %s" % (user_details['first_name'], user_details['last_name'])
+
+            user = models.User(uid=fbid, name=name)
+            user.save()
+
+            print "\nReceived Text: \"%s\" from %s (new user)\n" % (text, user.name)
+
+        else:
+
+            user = user[0]
+
+            print "\nReceived Text: \"%s\" from %s\n" % (text, user.name)
+
+        if intent is not None:
+            m = models.Message(user=user, content=text, confidence=confidence, intent=intent)
+            m.save()
+
+        """
         DISPATCH CODE
         Dispatches the calls to the various functions required to respond to a user
         """
         dispatch = FacebookHandler()
+
+        if intent is None:
+            dispatch.send_message(fbid, "Sorry I could not understand you")
+
+
         if intent_type == 'text':
 
-            if intent is not None:
+            response = nlp_handler.parse_response_from_intent(intent)
 
-                response = nlp_handler.parse_response_from_intent(intent)
-                print response
+            dispatch.send_message(fbid, response)
 
-                dispatch.send_message(fbid, response)
-            else:
-                print "I counldn't understand you"
-                dispatch.send_message(fbid, "Sorry, I am unable to understand you")
-
-            """
-            DATABASE CODE
-            This code will add a user if he does not exist, and save his message
-            """
-            user = models.User.objects.filter(uid=fbid)
-
-            if user.count() <= 0:
-                user = models.User(uid=fbid)
-                user.save()
-            else:
-                user = user[0]
-                pprint("We have a user for this id")
-
-            m = models.Message(user=user, content=text, confidence=confidence, intent=intent)
-            m.save()
 
         elif intent_type == 'image':
 
@@ -232,6 +241,8 @@ class VinciView(generic.View):
 
         user = models.User.objects.filter(uid=fbid)
         user = user[0]
+
+        print "\nRecevied postback from: %s selecting filter: %s\n" % (user.name, payload)
 
         image = user.image_set.all()
 
@@ -255,13 +266,9 @@ class VinciView(generic.View):
             img_in  = models.Image(user=user, filepath="in_%s" % out_file)
             url = "%s%s" % (SITE_URL, img_out.filepath.url)
 
-            pprint(url)
-
             image_size = (image.width, image.height)
 
             dl.render(img_in.filepath.path, img_out.filepath.path, fil.path.path)
-
-            pprint(url)
 
             dispatch.send_image(fbid, url)
 
@@ -279,12 +286,24 @@ class VinciView(generic.View):
 
         user = models.User.objects.filter(uid=fbid)
 
-        if not user:
-            user = models.User(uid=fbid)
+        if user.count() <= 0:
+
+            user_details_url = "https://graph.facebook.com/v2.6/%s"%fbid
+            user_details_params = {'fields':'first_name,last_name,profile_pic', 'access_token':ACCESS_TOKEN}
+            user_details = requests.get(user_details_url, user_details_params).json()
+
+            name = "%s %s" % (user_details['first_name'], user_details['last_name'])
+
+            user = models.User(uid=fbid, name=name)
             user.save()
+
+            print "\nReceived Image from %s (new user)\n" % (user.name)
+
         else:
+
             user = user[0]
-            pprint("We have a user for this id")
+
+            print "\nReceived Image from from %s\n" % (user.name)
 
         out_file="%d.jpg" % user.uid
         in_file = "in_%s" % out_file

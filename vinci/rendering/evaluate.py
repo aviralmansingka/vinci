@@ -15,8 +15,6 @@ DEVICE = '/gpu:0'
 # get img_shape
 def ffwd(data_in, paths_out, checkpoint_dir, device_t='/gpu:0', batch_size=4):
 
-    print data_in
-    print data_in[0]
 
     # is_paths = type(data_in[0]) == str
     # if is_paths:
@@ -107,10 +105,6 @@ def check_opts(opts):
         assert opts.batch_size > 0
 
 def render(in_path, out_path, filter_file):
-
-    print in_path
-    print out_path
-    print filter_file
 
     ffwd_to_img(in_path, out_path, filter_file, device="/cpu:0")
 

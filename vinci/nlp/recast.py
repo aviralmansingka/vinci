@@ -34,7 +34,7 @@ class Recast(object):
         if response.intent() is not None:
             return response.intent().slug, Recast.INTENT_TYPE[response.intent().slug], response.intent().confidence
         else:
-            return None, None, None
+            return None, None, 0.0
 
     def parse_response_from_intent(self, intent):
         """
@@ -45,7 +45,7 @@ class Recast(object):
 
         reply = replies.handle_intent(intent)
 
-        print reply
+        print "Response: %s" % reply
         if reply:
             return reply
         else:
