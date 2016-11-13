@@ -9,15 +9,16 @@ from django.utils.decorators import method_decorator
 
 from PIL import Image as Img
 
-from .nlp import recast as nlp
 from . import models
+from . import secrets
+from .nlp import recast as nlp
 from .rendering import evaluate as dl
-# Create your views here.
 
-SITE_URL='http://0cef449d.ngrok.io/'
-VALIDATION_TOKEN = "vinci"
-# ACCESS_TOKEN='EAADGJe1gDtQBAMld6JsYUVC9s1UPvFpePXPQDzDoQGhPZCmJhmeRioZCGZAIF6i3Is1or5AhcGzASx88SUD7Q0AP0GmTrWGzi1mL2UAhpSDYyOiGNfGrZAAo0ZAFtQzxdZA8cbqlfh10InP3TrA528AJKF33dZAbZCOWKVQTdSvPSQZDZD'
-ACCESS_TOKEN='EAAEpV66QdkABAAqPsnhZB3JM7av4qD2YUyRzYVVoxwdIP4cPMvfYVvGdF5pAygjHa8n9whCzXfbkpDHv8rGeyZCKTQDBCzu6v06x2v5bA7KaT7oJTu4DMKXOASZAlwHku8HxdGMOz4k9vtu3yfQkaa7Q1NkLWGxGF4PZCk6MpQZDZD'
+
+SITE_URL=secrets.SITE_URL
+VALIDATION_TOKEN = secrets.VALIDATION_TOKEN
+ACCESS_TOKEN=secrets.ACCESS_TOKEN
+
 
 class FacebookHandler(object):
 
