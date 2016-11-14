@@ -27,7 +27,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-MEDIA_ROOT = BASE_DIR + "/vinci/rendering/images/"
+STATIC_ROOT = BASE_DIR + "/vinci/rendering/static/"
+MEDIA_ROOT = STATIC_ROOT + "images/"
 MEDIA_URL = 'media/'
 
 # Application definition
