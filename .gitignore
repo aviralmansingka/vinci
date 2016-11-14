@@ -1,7 +1,3 @@
-vinci/rendering/imagenet-vgg*
-vinci/rendering/images/
-vinci/rendering/results/
-vinci/secrets.py
 *.pyc
 */*.pyc
 */*/*.pyc
