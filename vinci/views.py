@@ -235,9 +235,18 @@ class VinciView(generic.View):
         fbid = message['sender']['id']
         payload = message['postback']['payload']
 
-        text = "Okay! You've selected the filter \"%s\"" % payload
+        print "Payload is %s" % payload
 
         dispatch = FacebookHandler()
+
+        if payload == "get_started":
+
+            dispatch.send_message("Hey there! My name's Vinci, but maybe you can call me Leo ;-). Say hi to me or end me an image and see what happens")
+            return
+
+
+        text = "Okay! You've selected the filter \"%s\"" % payload
+
         dispatch.send_message(fbid, text)
 
         user = models.User.objects.filter(uid=fbid)

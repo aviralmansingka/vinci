@@ -41,7 +41,7 @@ class Replies():
     Return: prints an appropriate greeting
   """
   def generateGreeting(self, greetings, random_index):
-    return greetings[random_index]
+      return greetings[random_index] + " Wanna see me in action? Ask for some filters or send me an image!"
 
   """	A function that generates a reply for the goodbyes intent
     Parameters: list greetings, int random_index 
