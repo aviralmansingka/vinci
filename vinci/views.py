@@ -40,6 +40,7 @@ class FacebookHandler(object):
         for fil in filters:
 
             url = "%s/%s" % (SITE_URL, fil.url.url)
+            print "URL: %s" % url
 
             mydict = {
                     "title":fil.name,
@@ -241,7 +242,7 @@ class VinciView(generic.View):
 
         if payload == "get_started":
 
-            dispatch.send_message("Hey there! My name's Vinci, but maybe you can call me Leo ;-). Say hi to me or end me an image and see what happens")
+            dispatch.send_message(fbid, "Hey there! My name's Vinci, but maybe you can call me Leo ;-). Say hi to me or send me an image and see what happens")
             return
 
 
@@ -281,6 +282,8 @@ class VinciView(generic.View):
             dl.render(img_in.filepath.path, img_out.filepath.path, fil.path.path)
 
             dispatch.send_image(fbid, url)
+
+            dispatch.send_message(fbid, "We hope you liked it! You can simply select from the filters above if you plan on using the same image!")
 
 
 

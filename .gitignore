@@ -3,3 +3,9 @@
 */*/*.pyc
 */*/*/*.pyc
 vinci/rendering/static/images/*
+vinci/rendering/static/images/in_*
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
