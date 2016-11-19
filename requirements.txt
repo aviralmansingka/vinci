@@ -18,7 +18,6 @@ pathspec==0.3.4
 pbr==1.10.0
 Pillow==3.4.2
 protobuf==3.0.0
-psycopg2==2.6.2
 py==1.4.31
 pytest==3.0.3
 pytest-cov==2.4.0
