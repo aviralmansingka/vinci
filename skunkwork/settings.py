@@ -25,7 +25,7 @@ SECRET_KEY = '2q#s#*q7fz-xz8=igt6_m#i8y_kvg0!1wew$3tof+oy1!$yvk+'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost']
 
 STATIC_ROOT = BASE_DIR + "/vinci/rendering/static/"
 MEDIA_ROOT = STATIC_ROOT + "images/"
