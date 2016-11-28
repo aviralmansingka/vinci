@@ -1,4 +1,6 @@
 from random import randint
+import json
+from .. import models
 """ 
 The class generates auto random replies,
 when the user intent is identified as a greeting
@@ -50,6 +52,18 @@ class Replies():
   def generateGoodbye(self, goodbyes, random_index):
     return goodbyes[random_index]
 
+  def recommendFilter(self):
+    
+    filters = models.Filter.objects.all()
+
+    maxFilter = filters[0]
+
+    for fil in filters:
+      if fil.counter > maxFilter.counter:
+        maxFilter = fil
+    
+    return maxFilter.name    
+
 
   def handle_intent(self, intent):
     rand_index = self.generateIndex()
@@ -61,5 +75,7 @@ class Replies():
       return self.generateGoodbye(self.goodbyes, rand_index)
     elif intent == 'help-intent':
       return self.help_message
+    elif intent == 'recommend':
+      return self.recommendFilter()
     else:
       return "Didn't quite get that. Try greetings or goodbyes"
