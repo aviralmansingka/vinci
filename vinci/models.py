@@ -48,7 +48,7 @@ class Filter(models.Model):
     name = models.CharField(max_length=30)
     url = models.ImageField(upload_to='images/')
     path = models.FileField(upload_to='filters/')
+    counter = models.IntegerField(default=0);
 
     def __str__(self):
         return "Name: %s, URL: %s" % (self.name, self.url,)
-
