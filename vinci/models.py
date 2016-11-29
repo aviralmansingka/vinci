@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 
+from datetime import datetime
 from django.db import models
 
 # Create your models here.
@@ -23,6 +24,7 @@ class Message(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE,)
     confidence = models.FloatField()
     intent = models.CharField(max_length=30)
+    date - models.DateField(default=datetime.now(), blank=True)
 
     def __str__(self):
         return "User: %s, Message: %s, Intent: %s, Confidence: %s" % (self.user, self.content, self.intent, self.confidence)
