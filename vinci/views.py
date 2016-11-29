@@ -263,20 +263,9 @@ class VinciView(generic.View):
 
         fil = models.Filter.objects.filter(name=payload)
         fil = fil[0]
-        print "Initial filter counter is %d" % fil.counter
-
-        """
-        Increasing the count of the selected filter and saving in DATABASE
-        """
 
         fil.counter = fil.counter + 1;
         fil.save();
-
-        print "Updated filter counter is %d" % fil.counter
-
-        """
-        End
-        """
 
         if image and (DateTime.Now - image[0]).TotalDays < 1:
 
