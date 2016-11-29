@@ -254,6 +254,9 @@ class VinciView(generic.View):
         user = models.User.objects.filter(uid=fbid)
         user = user[0]
 
+        m = models.Message(user=user, content=payload, confidence=1.0, intent='postback')
+        m.save()
+
         print "\nRecevied postback from: %s selecting filter: %s\n" % (user.name, payload)
 
         image = user.image_set.all()
@@ -351,5 +354,31 @@ class VinciView(generic.View):
 
         dispatch = FacebookHandler()
 
-        dispatch.send_message(fbid, "Okay we have updated your image. Please select a filter again!")
-        dispatch.send_filters(fbid)
+        messages = user.message_set.all()
+
+        last_message = messages.pop()
+
+        if last_message.intent != 'postback':
+
+            dispatch.send_message(fbid, "Okay we have updated your image. Please select a filter again!")
+            dispatch.send_filters(fbid)
+
+        else:
+
+            fil = models.Filter.objects.filter(name=payload)
+            fil = fil[0]
+
+            dispatch.send_message(fbid, "We are now drawing your image by hand, scanning it, and sending it to you.")
+
+            out_file = "%d.jpg" % user.uid
+            img_out = models.Image(user=user, filepath=out_file)
+            img_in  = models.Image(user=user, filepath="in_%s" % out_file)
+            url = "%s%s" % (SITE_URL, img_out.filepath.url)
+
+            image_size = (image.width, image.height)
+
+            dl.render(img_in.filepath.path, img_out.filepath.path, fil.path.path)
+
+            dispatch.send_image(fbid, url)
+
+            dispatch.send_message(fbid, "We hope you liked it! You can simply select from the filters above if you plan on using the same image!")
