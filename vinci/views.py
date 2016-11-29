@@ -8,6 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 
 from PIL import Image as Img
+from datetime import datetime
 
 from . import models
 from . import secrets
@@ -274,13 +275,7 @@ class VinciView(generic.View):
         End
         """
 
-        if not image:
-
-            text = "You don't appear to have sent us an image yet. Do you want to send us one?"
-
-            dispatch.send_message(fbid, text)
-
-        else:
+        if image and (DateTime.Now - image[0]).TotalDays < 1:
 
             image = image[0]
 
@@ -299,6 +294,11 @@ class VinciView(generic.View):
 
             dispatch.send_message(fbid, "We hope you liked it! You can simply select from the filters above if you plan on using the same image!")
 
+        else:
+
+            text = "You don't appear to have sent us an image yet. Do you want to send us one?"
+
+            dispatch.send_message(fbid, text)
 
 
     def image_handler(self, message):
