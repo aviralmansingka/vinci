@@ -38,6 +38,7 @@ class Image(models.Model):
     filepath = models.ImageField(upload_to='images/')
     width = models.IntegerField()
     height = models.IntegerField()
+    date = models.DateTimeField(default=datetime.now(), blank=True)
 
     def __str__(self):
         return "User: %s, Upload Path: %s" % (self.user, self.filepath,)
