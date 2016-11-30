@@ -1,3 +1,5 @@
+https://storage.googleapis.com/tensorflow/linux/cpu/tensorflow-0.11.0-cp27-none-linux_x86_64.whl
+pip==9.0.1
 blessed==1.9.5
 botocore==1.4.76
 cement==2.8.2
@@ -32,7 +34,6 @@ s3transfer==0.1.9
 scipy==0.18.1
 semantic-version==2.5.0
 six==1.10.0
-tensorflow==0.11.0rc2
 texttable==0.8.7
 wcwidth==0.1.7
 websocket-client==0.37.0
