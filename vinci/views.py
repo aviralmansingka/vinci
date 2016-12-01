@@ -22,6 +22,7 @@ ACCESS_TOKEN=secrets.ACCESS_TOKEN
 
 class FacebookHandler(object):
 
+
     def send_message(self, fbid, received_message):
 
         send_message_url = 'https://graph.facebook.com/v2.6/me/messages?access_token=%s' % ACCESS_TOKEN
@@ -159,6 +160,7 @@ class VinciView(generic.View):
         """
 
         fbid = message['sender']['id']
+        print "Developer's ID is : %s" % fbid
 
         try:
             text = message['message']['text']
@@ -218,9 +220,12 @@ class VinciView(generic.View):
 
         if intent_type == 'text':
 
-            response = nlp_handler.parse_response_from_intent(intent)
+            if intent == 'server-downtime':
+                self.inform_server_downtime(fbid)
 
-            dispatch.send_message(fbid, response)
+            else:
+                response = nlp_handler.parse_response_from_intent(intent)
+                dispatch.send_message(fbid, response)
 
 
         elif intent_type == 'image':
@@ -353,3 +358,34 @@ class VinciView(generic.View):
 
         dispatch.send_message(fbid, "Okay we have updated your image. Please select a filter again!")
         dispatch.send_filters(fbid)
+
+
+    def inform_server_downtime(self, fbid):
+
+        developedIDs = [
+            "1349900578355936",
+            "989921677779516"
+        ]
+
+        if 0 <= developedIDs.index(fbid) < len(developedIDs):
+
+            message = "Server is going to be down on 12/12/2016 from 11:00PM EST to 11:59PM EST"
+    
+            userlist = models.User.objects.all()
+
+            dispatch = FacebookHandler()
+
+            for user_obj in userlist:
+
+                dispatch.send_message(user_obj.uid, message)
+
+
+    
+    
+       
+
+
+
+
+
+

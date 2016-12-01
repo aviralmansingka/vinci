@@ -19,6 +19,7 @@ class Recast(object):
         'showfilters': 'image',
         'help-intent':'text',
         'recommend':'text',
+        'server-downtime':'text',
     }
 
     def __init__(self):
