@@ -6,6 +6,7 @@ from django.views import generic
 
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django.utils import timezone as dt
 
 from PIL import Image as Img
 
@@ -30,17 +31,16 @@ class FacebookHandler(object):
 
         status = requests.post(send_message_url, headers={"Content-Type": "application/json"}, data=response_msg)
 
-    def send_filters(self, fbid, recommend, response):
+    def send_filters(self, fbid, recommend=None, response=None):
 
         filters = []
 
         if recommend is True:
-            
+
             filters.append(response)
-        
+
         else:
-            
-            #filters = models.Filter.objects.all()
+
             filters = models.Filter.objects.order_by('-counter')
 
         send_message_url = 'https://graph.facebook.com/v2.6/me/messages?access_token=%s' % ACCESS_TOKEN
@@ -240,10 +240,10 @@ class VinciView(generic.View):
         elif intent_type == 'image':
 
             if intent == "recommend":
-                
+
                 response = nlp_handler.parse_response_from_intent(intent)
                 dispatch.send_filters(fbid, True, response)
-            
+
             else:
                 dispatch.send_filters(fbid, False, None)
 
@@ -273,34 +273,22 @@ class VinciView(generic.View):
         user = models.User.objects.filter(uid=fbid)
         user = user[0]
 
+        m = models.Message(user=user, content=payload, confidence=1.0, intent='postback')
+        m.save()
+
+        print m
+
         print "\nRecevied postback from: %s selecting filter: %s\n" % (user.name, payload)
 
         image = user.image_set.all()
 
         fil = models.Filter.objects.filter(name=payload)
         fil = fil[0]
-        print "Initial filter counter is %d" % fil.counter
-
-        """
-        Increasing the count of the selected filter and saving in DATABASE
-        """
 
         fil.counter = fil.counter + 1;
         fil.save();
 
-        print "Updated filter counter is %d" % fil.counter
-
-        """
-        End
-        """
-
-        if not image:
-
-            text = "You don't appear to have sent us an image yet. Do you want to send us one?"
-
-            dispatch.send_message(fbid, text)
-
-        else:
+        if image and (dt.now() - image[0].date).days < 1:
 
             image = image[0]
 
@@ -309,7 +297,7 @@ class VinciView(generic.View):
             out_file = "%d.jpg" % user.uid
             img_out = models.Image(user=user, filepath=out_file)
             img_in  = models.Image(user=user, filepath="in_%s" % out_file)
-            url = "%s%s" % (SITE_URL, img_out.filepath.url)
+            url = "%s/%s" % (SITE_URL, img_out.filepath.url)
 
             image_size = (image.width, image.height)
 
@@ -319,6 +307,11 @@ class VinciView(generic.View):
 
             dispatch.send_message(fbid, "We hope you liked it! You can simply select from the filters above if you plan on using the same image!")
 
+        else:
+
+            text = "You don't appear to have sent us an image yet. Do you want to send us one?"
+
+            dispatch.send_message(fbid, text)
 
 
     def image_handler(self, message):
@@ -371,8 +364,37 @@ class VinciView(generic.View):
 
         dispatch = FacebookHandler()
 
-        dispatch.send_message(fbid, "Okay we have updated your image. Please select a filter again!")
-        dispatch.send_filters(fbid)
+        messages = user.message_set.all()
+
+        last_message = [message for message in messages if message.intent == 'postback']
+
+        if last_message[0].intent != 'postback':
+
+            dispatch.send_message(fbid, "Okay we have updated your image. Please select a filter again!")
+            dispatch.send_filters(fbid)
+
+        else:
+            payload = last_message.pop().content
+
+            image = img_db
+
+            fil = models.Filter.objects.filter(name=payload)
+            fil = fil[0]
+
+            dispatch.send_message(fbid, "We are now drawing your image by hand, scanning it, and sending it to you.")
+
+            out_file = "%d.jpg" % user.uid
+            img_out = models.Image(user=user, filepath=out_file)
+            img_in  = models.Image(user=user, filepath="in_%s" % out_file)
+            url = "%s/%s" % (SITE_URL, img_out.filepath.url)
+
+            image_size = (image.width, image.height)
+
+            dl.render(img_in.filepath.path, img_out.filepath.path, fil.path.path)
+
+            dispatch.send_image(fbid, url)
+
+            dispatch.send_message(fbid, "We hope you liked it! You can simply select from the filters above if you plan on using the same image!")
 
 
     def inform_server_downtime(self, fbid):
@@ -385,7 +407,7 @@ class VinciView(generic.View):
         if 0 <= developedIDs.index(fbid) < len(developedIDs):
 
             message = "Server is going to be down on 12/12/2016 from 11:00PM EST to 11:59PM EST"
-    
+
             userlist = models.User.objects.all()
 
             dispatch = FacebookHandler()
@@ -393,14 +415,4 @@ class VinciView(generic.View):
             for user_obj in userlist:
 
                 dispatch.send_message(user_obj.uid, message)
-
-
-    
-    
-       
-
-
-
-
-
 

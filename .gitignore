@@ -4,6 +4,7 @@
 */*/*/*.pyc
 vinci/rendering/static/images/*
 vinci/rendering/static/images/in_*
+vinci/secrets.py
 
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
