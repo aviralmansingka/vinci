@@ -62,7 +62,7 @@ class Replies():
       if fil.counter > maxFilter.counter:
         maxFilter = fil
     
-    return maxFilter.name    
+    return maxFilter
 
 
   def handle_intent(self, intent):

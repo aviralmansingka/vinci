@@ -18,7 +18,7 @@ class Recast(object):
         'goodbyes': 'text',
         'showfilters': 'image',
         'help-intent':'text',
-        'recommend':'text',
+        'recommend':'image',
         'server-downtime':'text',
     }
 

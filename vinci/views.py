@@ -30,9 +30,18 @@ class FacebookHandler(object):
 
         status = requests.post(send_message_url, headers={"Content-Type": "application/json"}, data=response_msg)
 
-    def send_filters(self, fbid):
+    def send_filters(self, fbid, recommend, response):
 
-        filters = models.Filter.objects.all()
+        filters = []
+
+        if recommend is True:
+            
+            filters.append(response)
+        
+        else:
+            
+            #filters = models.Filter.objects.all()
+            filters = models.Filter.objects.order_by('-counter')
 
         send_message_url = 'https://graph.facebook.com/v2.6/me/messages?access_token=%s' % ACCESS_TOKEN
 
@@ -230,7 +239,13 @@ class VinciView(generic.View):
 
         elif intent_type == 'image':
 
-            dispatch.send_filters(fbid)
+            if intent == "recommend":
+                
+                response = nlp_handler.parse_response_from_intent(intent)
+                dispatch.send_filters(fbid, True, response)
+            
+            else:
+                dispatch.send_filters(fbid, False, None)
 
 
     def postback_handler(self, message):
