@@ -368,7 +368,7 @@ class VinciView(generic.View):
 
         last_message = [message for message in messages if message.intent == 'postback']
 
-        if last_message[0].intent != 'postback':
+        if not last_message or last_message[0].intent != 'postback':
 
             dispatch.send_message(fbid, "Okay we have updated your image. Please select a filter again!")
             dispatch.send_filters(fbid)
