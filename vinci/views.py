@@ -1,4 +1,4 @@
-import json, requests, subprocess, urllib
+import json, requests, subprocess, urllib, os
 from pprint import pprint
 
 from django.http import HttpResponse
@@ -27,6 +27,7 @@ class FacebookHandler(object):
     def send_message(self, fbid, received_message):
 
         send_message_url = 'https://graph.facebook.com/v2.6/me/messages?access_token=%s' % ACCESS_TOKEN
+
         response_msg = json.dumps({"recipient": {"id":fbid}, "message":{"text":received_message}})
 
         status = requests.post(send_message_url, headers={"Content-Type": "application/json"}, data=response_msg)
@@ -50,7 +51,6 @@ class FacebookHandler(object):
         for fil in filters:
 
             url = "%s/%s" % (SITE_URL, fil.url.url)
-            print "URL: %s" % url
 
             mydict = {
                     "title":fil.name,
@@ -83,28 +83,66 @@ class FacebookHandler(object):
 
         status = requests.post(send_message_url, headers={"Content-Type": "application/json"}, data=response_msg)
 
-    def send_image(self, fbid, url):
+    def send_image(self, fbid, url, path=None):
 
         send_message_url = 'https://graph.facebook.com/v2.6/me/messages?access_token=%s' % ACCESS_TOKEN
+
+        elements = []
+
         response_to_send = {
                 "recipient":{
                     "id":fbid
-                    },
-                "message":{
-                    "attachment":{
-                        "type":"image",
-                        "payload":{
-                            "url": url
-                            }
-                        }
-                    }
-                }
+                },
+                "sender_action":"typing_on"
+        }
 
         response_msg = json.dumps(response_to_send)
 
         status = requests.post(send_message_url, headers={"Content-Type": "application/json"}, data=response_msg)
 
+        response_to_send = {
+                "recipient":{
+                    "id":fbid
+                },
+                "message":{
+                    "attachment":{
+                        "type":"image",
+                        "payload":{
+                            "url":url
+                            }
+                        }
+                  }
+        }
 
+        response_msg = json.dumps(response_to_send)
+
+        status = requests.post(send_message_url, headers={"Content-Type": "application/json"}, data=response_msg)
+
+        response_to_send = {
+                "recipient":{
+                    "id":fbid
+                },
+                "message":{
+                    "attachment":{
+                        "type":"template",
+                        "payload":{
+                            "template_type":"button",
+                            "text":"Do you want to see a full sized image?",
+                            "buttons":[
+                            {
+                               "type":"web_url",
+                               "url":url,
+                               "title":"Show Image"
+                            }
+                        ]
+                      }
+                    }
+                }
+            }
+
+        response_msg = json.dumps(response_to_send)
+
+        status = requests.post(send_message_url, headers={"Content-Type": "application/json"}, data=response_msg)
 
 class IndexView(generic.View):
     def get(self, request, *args, **kwargs):
@@ -224,7 +262,32 @@ class VinciView(generic.View):
         dispatch = FacebookHandler()
 
         if intent is None:
-            dispatch.send_message(fbid, "Sorry I could not understand you")
+
+            if text == 'No :(':
+                dispatch.send_message(fbid, "You can try some of our other filters!")
+
+                send_message_url = 'https://graph.facebook.com/v2.6/me/messages?access_token=%s' % ACCESS_TOKEN
+
+                response_to_send = {
+                    "recipient":{
+                        "id":fbid
+                    },
+                    "message":{
+                        "text":"Do you want to see filters?",
+                        "quick_replies":[
+                        {
+                            "content_type":"text",
+                            "title":"Show filters",
+                            "payload":"Thank You!"
+                            }
+                        ]
+                    }
+                }
+
+                response_msg = json.dumps(response_to_send)
+                status = requests.post(send_message_url, headers={"Content-Type": "application/json"}, data=response_msg)
+            else:
+                dispatch.send_message(fbid, "Sorry I could not understand you")
 
 
         if intent_type == 'text':
@@ -238,6 +301,9 @@ class VinciView(generic.View):
 
 
         elif intent_type == 'image':
+
+            if text == 'I like it!':
+                dispatch.send_message(fbid, "We are glad that you like the Image! Try some of our other filters.")
 
             if intent == "recommend":
 
@@ -303,9 +369,34 @@ class VinciView(generic.View):
 
             dl.render(img_in.filepath.path, img_out.filepath.path, fil.path.path)
 
-            dispatch.send_image(fbid, url)
+            dispatch.send_image(fbid, url, img_out.filepath.path)
 
-            dispatch.send_message(fbid, "We hope you liked it! You can simply select from the filters above if you plan on using the same image!")
+            send_message_url = 'https://graph.facebook.com/v2.6/me/messages?access_token=%s' % ACCESS_TOKEN
+
+            response_to_send = {
+                "recipient":{
+                    "id":fbid
+                },
+                "message":{
+                    "text":"Do you like it?",
+                    "quick_replies":[
+                    {
+                        "content_type":"text",
+                        "title":"I like it!",
+                        "payload":"Thank You!"
+                    },
+                    {
+                        "content_type":"text",
+                        "title":"No :(",
+                        "payload":"Thank You!"
+                    }
+                    ]
+                }
+            }
+
+            response_msg = json.dumps(response_to_send)
+
+            status = requests.post(send_message_url, headers={"Content-Type": "application/json"}, data=response_msg)
 
         else:
 
@@ -392,7 +483,7 @@ class VinciView(generic.View):
 
             dl.render(img_in.filepath.path, img_out.filepath.path, fil.path.path)
 
-            dispatch.send_image(fbid, url)
+            dispatch.send_image(fbid, url, img_out.filepath.path)
 
             dispatch.send_message(fbid, "We hope you liked it! You can simply select from the filters above if you plan on using the same image!")
 
