@@ -370,11 +370,21 @@ class VinciView(generic.View):
 
             image_size = (image.width, image.height)
 
+            send_message_url = 'https://graph.facebook.com/v2.6/me/messages?access_token=%s' % ACCESS_TOKEN
+
+            response_to_send = {
+                "recipient":{
+                    "id":fbid
+                },
+                "sender_action":"typing_on"
+            }
+
+            response_msg = json.dumps(response_to_send)
+            status = requests.post(send_message_url, headers={"Content-Type": "application/json"}, data=response_msg)
+
             dl.render(img_in.filepath.path, img_out.filepath.path, fil.path.path)
 
             dispatch.send_image(fbid, url, img_out.filepath.path)
-
-            send_message_url = 'https://graph.facebook.com/v2.6/me/messages?access_token=%s' % ACCESS_TOKEN
 
             response_to_send = {
                 "recipient":{
@@ -484,11 +494,47 @@ class VinciView(generic.View):
 
             image_size = (image.width, image.height)
 
+            send_message_url = 'https://graph.facebook.com/v2.6/me/messages?access_token=%s' % ACCESS_TOKEN
+
+            response_to_send = {
+                "recipient":{
+                    "id":fbid
+                },
+                "sender_action":"typing_on"
+            }
+
+            response_msg = json.dumps(response_to_send)
+
+            status = requests.post(send_message_url, headers={"Content-Type": "application/json"}, data=response_msg)
+
             dl.render(img_in.filepath.path, img_out.filepath.path, fil.path.path)
 
             dispatch.send_image(fbid, url, img_out.filepath.path)
 
-            dispatch.send_message(fbid, "We hope you liked it! You can simply select from the filters above if you plan on using the same image!")
+            response_to_send = {
+                "recipient":{
+                    "id":fbid
+                },
+                "message":{
+                    "text":"Do you like it?",
+                    "quick_replies":[
+                    {
+                        "content_type":"text",
+                        "title":"I like it!",
+                        "payload":"Thank You!"
+                    },
+                    {
+                        "content_type":"text",
+                        "title":"No :(",
+                        "payload":"Thank You!"
+                    }
+                    ]
+                }
+            }
+
+            response_msg = json.dumps(response_to_send)
+
+            status = requests.post(send_message_url, headers={"Content-Type": "application/json"}, data=response_msg)
 
 
     def inform_server_downtime(self, fbid):
