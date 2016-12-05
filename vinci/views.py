@@ -273,13 +273,18 @@ class VinciView(generic.View):
                         "id":fbid
                     },
                     "message":{
-                        "text":"Do you want to see filters?",
+                        "text":"Do you want to try our recommended filters?",
                         "quick_replies":[
                         {
                             "content_type":"text",
-                            "title":"Show filters",
+                            "title":"Recommended filter",
                             "payload":"Thank You!"
-                            }
+                        },
+                        {
+                            "content_type":"text",
+                            "title":"All filters",
+                            "payload":"Thank You!"
+                        }
                         ]
                     }
                 }
