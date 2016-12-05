@@ -20,6 +20,7 @@ class Recast(object):
         'help-intent':'text',
         'recommend':'image',
         'server-downtime':'text',
+        'theme':'text',
     }
 
     def __init__(self):

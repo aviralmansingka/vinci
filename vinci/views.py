@@ -298,7 +298,10 @@ class VinciView(generic.View):
         if intent_type == 'text':
 
             if intent == 'server-downtime':
-                self.inform_server_downtime(fbid)
+                self.inform_server_downtime(fbid, text)
+
+            elif intent == 'theme':
+                self.inform_theme(fbid, text)
 
             else:
                 response = nlp_handler.parse_response_from_intent(intent)
@@ -539,7 +542,7 @@ class VinciView(generic.View):
             status = requests.post(send_message_url, headers={"Content-Type": "application/json"}, data=response_msg)
 
 
-    def inform_server_downtime(self, fbid):
+    def inform_server_downtime(self, fbid, text):
 
         developedIDs = [
             "1349900578355936",
@@ -548,7 +551,9 @@ class VinciView(generic.View):
 
         if 0 <= developedIDs.index(fbid) < len(developedIDs):
 
-            message = "Server is going to be down on 12/12/2016 from 11:00PM EST to 11:59PM EST"
+            message = text.split(" ",1)[1] 
+
+            message = "Server is going to be down on %s" % message
 
             userlist = models.User.objects.all()
 
@@ -558,3 +563,24 @@ class VinciView(generic.View):
 
                 dispatch.send_message(user_obj.uid, message)
 
+
+    def inform_theme(self, fbid, text):
+        
+        developedIDs = [
+            "1349900578355936",
+            "989921677779516"
+        ]
+
+        if 0 <= developedIDs.index(fbid) < len(developedIDs):
+
+            theme = text.split(" ",1)[1] 
+
+            message = "The theme of the month is %s!" % theme
+
+            userlist = models.User.objects.all()
+
+            dispatch = FacebookHandler()
+
+            for user_obj in userlist:
+
+                dispatch.send_message(user_obj.uid, message)
