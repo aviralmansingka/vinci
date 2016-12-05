@@ -293,7 +293,7 @@ class VinciView(generic.View):
         if intent_type == 'text':
 
             if intent == 'server-downtime':
-                self.inform_server_downtime(fbid)
+                self.inform_server_downtime(fbid, text)
 
             elif intent == 'theme':
                 self.inform_theme(fbid, text)
@@ -537,7 +537,7 @@ class VinciView(generic.View):
             status = requests.post(send_message_url, headers={"Content-Type": "application/json"}, data=response_msg)
 
 
-    def inform_server_downtime(self, fbid):
+    def inform_server_downtime(self, fbid, text):
 
         developedIDs = [
             "1349900578355936",
@@ -546,7 +546,9 @@ class VinciView(generic.View):
 
         if 0 <= developedIDs.index(fbid) < len(developedIDs):
 
-            message = "Server is going to be down on 12/12/2016 from 11:00PM EST to 11:59PM EST"
+            message = text.split(" ",1)[1] 
+
+            message = "Server is going to be down on %s" % message
 
             userlist = models.User.objects.all()
 
