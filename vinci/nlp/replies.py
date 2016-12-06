@@ -28,7 +28,7 @@ class Replies():
       ]
 
   # help_message =  "As your Personal Artist, I can be used the following ways\nSee the range of artworks I have available by typing, for instance \'show filters\' or,\nYou may send me a picture on which you want the artwork to be applied on, then select a filter of your choice and then experience the piece of exclusive modern artwork created for you."
-  help_message='Help'
+  help_message='Say hi'
   
   
   """	A function that generates an integer to index the lists.
